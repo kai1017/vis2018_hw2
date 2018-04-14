@@ -67,8 +67,12 @@ svg.append("g")
   .append("line")
     .attr("y1", "100%");
 
-d3.csv("traveler.csv", function(data) {
-    console.log(data);
+d3.json("traveler.json", function(error, root) {
+  if (error) throw error;
+
+  partition.nodes(root);
+  x.domain([0, root.value]).nice();
+  down(root, 0);
 });
 
 function down(d, i) {
