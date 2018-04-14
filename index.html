@@ -161,7 +161,7 @@ function up(d) {
       .style("fill-opacity", 1e-6);
 
   // Update the x-scale domain.
-  x.domain([0, d3.max(d.parent.children, function(d) { return d.value; })]).nice();
+  x.domain([1, d3.max(d.parent.children, function(d) { return d.value; })]).nice();
 
   // Update the x-axis.
   svg.selectAll(".x.axis").transition()
