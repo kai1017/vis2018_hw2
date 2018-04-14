@@ -25,8 +25,8 @@ rect.background {
     <div id="option">
         <input name="updateButton" 
             type="button" 
-            value="Update" 
-            onclick="updateData()" />
+            value="Switch" 
+            onclick="switchData()" />
     </div>
 </body>
 <script src="//d3js.org/d3.v3.min.js"></script>
@@ -81,7 +81,10 @@ d3.json("traveler.json", function(error, root) {
   x.domain([1, root.value]).nice();
   down(root, 0);
 });
-
+function switchData(){
+    x = d3.scale.linear().range([0, width]);
+    x.domain([0, d3.max(d, function(d) { return d.value; })]).nice();
+}
 function down(d, i) {
   if (!d.children || this.__transition__) return;
   var end = duration + d.children.length * delay;
