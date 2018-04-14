@@ -67,12 +67,8 @@ svg.append("g")
   .append("line")
     .attr("y1", "100%");
 
-d3.json("readme.json", function(error, root) {
-  if (error) throw error;
-
-  partition.nodes(root);
-  x.domain([0, root.value]).nice();
-  down(root, 0);
+d3.csv("https://github.com/kai1017/vis2018_hw2/blob/master/traveler.csv", function(data) {
+    console.log(data);
 });
 
 function down(d, i) {
