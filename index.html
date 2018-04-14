@@ -83,7 +83,7 @@ d3.json("traveler.json", function(error, root) {
 });
 function switchData(d){
     x = d3.scale.linear().range([0, width]);
-    x.domain([0, d3.max(d, function(d) { return d.value; })]).nice();
+    x.domain([0, d3.max(d.parent.children, function(d) { return d.value; })]).nice();
 }
 function down(d, i) {
   if (!d.children || this.__transition__) return;
