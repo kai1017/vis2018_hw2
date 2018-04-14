@@ -29,7 +29,7 @@ var margin = {top: 30, right: 120, bottom: 0, left: 120},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
-var x = d3.scale.linear()
+var x = d3.scale.log()
     .range([0, width]);
 
 var barHeight = 20;
@@ -71,7 +71,7 @@ d3.json("traveler.json", function(error, root) {
   if (error) throw error;
 
   partition.nodes(root);
-  x.domain([0, root.value]).nice();
+  x.domain([1, root.value]).nice();
   down(root, 0);
 });
 
@@ -99,7 +99,7 @@ function down(d, i) {
   enter.select("rect").style("fill", color(true));
 
   // Update the x-scale domain.
-  x.domain([0, d3.max(d.children, function(d) { return d.value; })]).nice();
+  x.domain([1, d3.max(d.children, function(d) { return d.value; })]).nice();
 
   // Update the x-axis.
   svg.selectAll(".x.axis").transition()
