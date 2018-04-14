@@ -1,244 +1,412 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<style>
 
-text {
-  font: 10px sans-serif;
-}
+<head>
+    <title>drone speed</title>
+    <link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Play:700,400' type='text/css'>
+    
+    <script type="text/javascript" src="https://iop.io/js/vendor/d3.v3.min.js"></script>
+    <script type="text/javascript" src="https://iop.io/js/vendor/polymer/PointerEvents/pointerevents.js"></script>
+    <script type="text/javascript" src="https://iop.io/js/vendor/polymer/PointerGestures/pointergestures.js"></script>
+    <script type="text/javascript" src="https://iop.io/js/iopctrl.js"></script>
+    
+    
+    <style>
+        body {
+            font: 16px arial;
+            background-color: #515151;
+        }
 
-rect.background {
-  fill: white;
-}
+        .unselectable {
+            -moz-user-select: -moz-none;
+            -khtml-user-select: none;
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
 
-.axis {
-  shape-rendering: crispEdges;
-}
+        /* css formats for the gauge */
+        .gauge .domain {
+            stroke-width: 2px;
+            stroke: #fff;
+        }
 
-.axis path,
-.axis line {
-  fill: none;
-  stroke: #000;
-}
+        .gauge .tick line {
+            stroke: #fff;
+            stroke-width: 2px;
+        }
+        
+        .gauge line {
+            stroke: #fff;
+        }
 
-</style>
+        .gauge .arc, .gauge .cursor {
+            opacity: 0;
+        }
+
+        .gauge .major {
+            fill: #fff;
+            font-size: 20px;
+            font-family: 'Play', verdana, sans-serif;
+            font-weight: normal;
+        }
+        
+        .gauge .indicator {
+            stroke: #EE3311;
+            fill: #000;
+            stroke-width: 4px;
+        }
+
+        /* css formats for the segment display */
+        .segdisplay .on {
+            fill: #00FFFF;
+
+        }
+
+        .segdisplay .off {
+            fill: #00FFFF;
+            opacity: 0.15;
+        }
+    </style>
+</head>
 <body>
-<script src="//d3js.org/d3.v3.min.js"></script>
-<script>
+    <div>
+        <span id="speedometer"></span>
+    </div>
+    
+    <script >
+        var data=[{PositionX:1.053078,PositionY:17.89708,PositionZ:3.308614,RotationX:1.881447,RotationY:0.2308191,RotationZ:359.6765,Speed:4.292373,SpeedX:0.1709203,SpeedY:4.177756,SpeedZ:0.9703627},
+{PositionX:1.059796,PositionY:18.0643,PositionZ:3.346982,RotationX:1.881332,RotationY:0.2308052,RotationZ:359.6765,Speed:4.289974,SpeedX:0.172475,SpeedY:4.173166,SpeedZ:0.9791898},
+{PositionX:1.080306,PositionY:18.56504,PositionZ:3.464095,RotationX:1.880988,RotationY:0.2307644,RotationZ:359.6765,Speed:4.285126,SpeedX:0.1768946,SpeedY:4.162023,SpeedZ:1.004283},
+{PositionX:1.101314,PositionY:19.06472,PositionZ:3.584036,RotationX:1.880643,RotationY:0.230722,RotationZ:359.6766,Speed:4.28293,SpeedX:0.1809559,SpeedY:4.153952,SpeedZ:1.027342},
+{PositionX:1.115576,PositionY:19.39741,PositionZ:3.665451,RotationX:1.880413,RotationY:0.2306959,RotationZ:359.6767,Speed:4.282506,SpeedX:0.1834718,SpeedY:4.149845,SpeedZ:1.041627},
+{PositionX:1.119172,PositionY:19.48053,PositionZ:3.685977,RotationX:1.880355,RotationY:0.2306885,RotationZ:359.6767,Speed:4.282502,SpeedX:0.1840776,SpeedY:4.148948,SpeedZ:1.045067},
+{PositionX:1.126398,PositionY:19.64674,PositionZ:3.727228,RotationX:1.880241,RotationY:0.2306747,RotationZ:359.6767,Speed:4.282595,SpeedX:0.1852619,SpeedY:4.147292,SpeedZ:1.051791},
+{PositionX:1.144661,PositionY:20.06201,PositionZ:3.831471,RotationX:1.879954,RotationY:0.2306404,RotationZ:359.6767,Speed:4.283328,SpeedX:0.1880683,SpeedY:4.14385,SpeedZ:1.067726},
+{PositionX:1.166923,PositionY:20.55997,PositionZ:3.958529,RotationX:1.879609,RotationY:0.2305987,RotationZ:359.6768,Speed:4.28489,SpeedX:0.1911589,SpeedY:4.140764,SpeedZ:1.085273},
+{PositionX:1.170668,PositionY:20.64293,PositionZ:3.979901,RotationX:1.879552,RotationY:0.2305914,RotationZ:359.6768,Speed:4.285203,SpeedX:0.1916459,SpeedY:4.140338,SpeedZ:1.088039},
+{PositionX:1.178185,PositionY:20.80884,PositionZ:4.022805,RotationX:1.879437,RotationY:0.2305784,RotationZ:359.6768,Speed:4.28586,SpeedX:0.192597,SpeedY:4.139553,SpeedZ:1.093439},
+{PositionX:1.200953,PositionY:21.30639,PositionZ:4.152736,RotationX:1.879093,RotationY:0.2305358,RotationZ:359.6769,Speed:4.288036,SpeedX:0.1952722,SpeedY:4.13764,SpeedZ:1.108629},
+{PositionX:1.21245,PositionY:21.5551,PositionZ:4.218348,RotationX:1.878921,RotationY:0.2305163,RotationZ:359.6769,Speed:4.289198,SpeedX:0.1965147,SpeedY:4.136889,SpeedZ:1.115684},
+{PositionX:1.22789,PositionY:21.88665,PositionZ:4.306453,RotationX:1.878691,RotationY:0.2304894,RotationZ:359.6769,Speed:4.290788,SpeedX:0.1980786,SpeedY:4.136059,SpeedZ:1.124564},
+{PositionX:1.239548,PositionY:22.13527,PositionZ:4.372974,RotationX:1.878518,RotationY:0.230469,RotationZ:359.677,Speed:4.291992,SpeedX:0.1991851,SpeedY:4.135541,SpeedZ:1.130848},
+{PositionX:1.259027,PositionY:22.54954,PositionZ:4.486159,RotationX:1.878257,RotationY:0.2304333,RotationZ:359.6771,Speed:4.298774,SpeedX:0.1997118,SpeedY:4.134218,SpeedZ:1.160952},
+{PositionX:1.270709,PositionY:22.79803,PositionZ:4.556189,RotationX:1.8781,RotationY:0.2304122,RotationZ:359.6771,Speed:4.305571,SpeedX:0.1995887,SpeedY:4.133216,SpeedZ:1.18938},
+{PositionX:1.290046,PositionY:23.21204,PositionZ:4.677143,RotationX:1.877839,RotationY:0.2303765,RotationZ:359.6772,Speed:4.318835,SpeedX:0.1978334,SpeedY:4.131621,SpeedZ:1.242139},
+{PositionX:1.303291,PositionY:23.4701,PositionZ:4.812325,RotationX:23.28544,RotationY:0.1020748,RotationZ:9.050589,Speed:2.60186,SpeedX:0.1019588,SpeedY:2.153412,SpeedZ:1.456741},
+{PositionX:1.301209,PositionY:23.52202,PositionZ:4.888037,RotationX:26.73088,RotationY:0.07843738,RotationZ:9.423662,Speed:2.321795,SpeedX:-0.01568176,SpeedY:1.457523,SpeedZ:1.80724},
+{PositionX:1.26477,PositionY:23.49305,PositionZ:5.236926,RotationX:33.35559,RotationY:0.02854194,RotationZ:9.403251,Speed:3.460987,SpeedX:-0.3925343,SpeedY:-0.8630245,SpeedZ:3.328594},
+{PositionX:1.201473,PositionY:23.25299,PositionZ:5.668491,RotationX:33.74261,RotationY:0.02539992,RotationZ:9.401575,Speed:5.40748,SpeedX:-0.6853965,SpeedY:-2.802277,SpeedZ:4.573654},
+{PositionX:1.185568,PositionY:23.18301,PositionZ:5.768164,RotationX:32.79021,RotationY:0.03306616,RotationZ:9.405793,Speed:5.79371,SpeedX:-0.7390073,SpeedY:-3.166945,SpeedZ:4.794935},
+{PositionX:1.036243,PositionY:22.83623,PositionZ:6.616008,RotationX:29.86914,RotationY:0.05559709,RotationZ:7.093693,Speed:8.51597,SpeedX:-1.402319,SpeedY:-2.694162,SpeedZ:7.955925},
+{PositionX:0.8665781,PositionY:22.63372,PositionZ:7.563558,RotationX:29.86885,RotationY:0.05559078,RotationZ:7.093752,Speed:10.14204,SpeedX:-1.752366,SpeedY:-1.876596,SpeedZ:9.811658},
+{PositionX:0.8297805,PositionY:22.60283,PositionZ:7.768149,RotationX:30.50368,RotationY:0.05080797,RotationZ:7.091359,Speed:10.34623,SpeedX:-1.797062,SpeedY:-1.714989,SpeedZ:10.0436},
+{PositionX:0.6017468,PositionY:22.43294,PositionZ:9.131181,RotationX:40.71302,RotationY:359.9633,RotationZ:7.040294,Speed:12.09707,SpeedX:-1.90483,SpeedY:-1.452776,SpeedZ:11.85749},
+{PositionX:0.4177931,PositionY:22.28799,PositionZ:10.35505,RotationX:40.71274,RotationY:359.9633,RotationZ:7.040359,Speed:12.52619,SpeedX:-1.814921,SpeedY:-1.469573,SpeedZ:12.30658},
+{PositionX:0.3821277,PositionY:22.2591,PositionZ:10.60182,RotationX:40.71267,RotationY:359.9633,RotationZ:7.040372,Speed:12.54908,SpeedX:-1.796151,SpeedY:-1.467369,SpeedZ:12.33289},
+{PositionX:0.1740882,PositionY:22.08685,PositionZ:12.08598,RotationX:40.71233,RotationY:359.9633,RotationZ:7.040457,Speed:12.59043,SpeedX:-1.709839,SpeedY:-1.451718,SpeedZ:12.38902},
+{PositionX:0.00605873,PositionY:21.94444,PositionZ:13.32442,RotationX:40.71206,RotationY:359.9633,RotationZ:7.040527,Speed:12.59322,SpeedX:-1.668127,SpeedY:-1.442632,SpeedZ:12.3986},
+{PositionX:-0.02717054,PositionY:21.91604,PositionZ:13.57218,RotationX:40.712,RotationY:359.9633,RotationZ:7.040541,Speed:12.59327,SpeedX:-1.662123,SpeedY:-1.441289,SpeedZ:12.39962},
+{PositionX:-0.2274836,PositionY:21.74576,PositionZ:15.05838,RotationX:40.71167,RotationY:359.9633,RotationZ:7.427939,Speed:12.59062,SpeedX:-1.67156,SpeedY:-1.438952,SpeedZ:12.39593},
+{PositionX:-0.396415,PositionY:21.60386,PositionZ:16.29647,RotationX:40.7114,RotationY:359.9634,RotationZ:7.428009,Speed:12.59,SpeedX:-1.687398,SpeedY:-1.439131,SpeedZ:12.39313},
+{PositionX:-0.464309,PositionY:21.54709,PositionZ:16.79165,RotationX:40.71127,RotationY:359.9634,RotationZ:7.428034,Speed:12.58993,SpeedX:-1.691704,SpeedY:-1.439206,SpeedZ:12.39247},
+{PositionX:-0.6345652,PositionY:21.40516,PositionZ:18.02954,RotationX:40.71098,RotationY:359.9634,RotationZ:7.428099,Speed:12.58984,SpeedX:-1.699156,SpeedY:-1.439326,SpeedZ:12.39133},
+{PositionX:-0.7369695,PositionY:21.32,PositionZ:18.77223,RotationX:40.71082,RotationY:359.9634,RotationZ:7.428139,Speed:12.58982,SpeedX:-1.702039,SpeedY:-1.439364,SpeedZ:12.39092},
+{PositionX:-0.9076342,PositionY:21.17502,PositionZ:20.01057,RotationX:41.09785,RotationY:359.9596,RotationZ:7.425733,Speed:12.59954,SpeedX:-1.701088,SpeedY:-1.483206,SpeedZ:12.39576},
+{PositionX:-1.009953,PositionY:21.08653,PositionZ:20.7532,RotationX:40.71062,RotationY:359.9634,RotationZ:7.428278,Speed:12.59482,SpeedX:-1.700535,SpeedY:-1.495371,SpeedZ:12.38957},
+{PositionX:-1.180799,PositionY:20.9409,PositionZ:21.99096,RotationX:40.71012,RotationY:359.9634,RotationZ:7.428368,Speed:12.59334,SpeedX:-1.704409,SpeedY:-1.472078,SpeedZ:12.39033},
+{PositionX:-1.317661,PositionY:20.82556,PositionZ:22.98116,RotationX:40.70992,RotationY:359.9634,RotationZ:7.428441,Speed:12.59218,SpeedX:-1.706258,SpeedY:-1.460532,SpeedZ:12.39026},
+{PositionX:-1.386133,PositionY:20.76814,PositionZ:23.47626,RotationX:40.70981,RotationY:359.9634,RotationZ:7.42848,Speed:12.59173,SpeedX:-1.70692,SpeedY:-1.456374,SpeedZ:12.39021},
+{PositionX:-1.591654,PositionY:20.59655,PositionZ:24.96155,RotationX:40.7095,RotationY:359.9634,RotationZ:7.428596,Speed:12.59083,SpeedX:-1.708235,SpeedY:-1.448129,SpeedZ:12.39007},
+{PositionX:-1.660186,PositionY:20.53951,PositionZ:25.45665,RotationX:40.70939,RotationY:359.9634,RotationZ:7.428636,Speed:12.59063,SpeedX:-1.708518,SpeedY:-1.446364,SpeedZ:12.39003},
+{PositionX:-1.865829,PositionY:20.36868,PositionZ:26.94192,RotationX:40.70909,RotationY:359.9634,RotationZ:7.428755,Speed:12.59024,SpeedX:-1.709088,SpeedY:-1.442849,SpeedZ:12.38997},
+{PositionX:-1.968668,PositionY:20.28338,PositionZ:27.68456,RotationX:40.70894,RotationY:359.9635,RotationZ:7.428813,Speed:12.59013,SpeedX:-1.709267,SpeedY:-1.441768,SpeedZ:12.38995},
+{PositionX:-2.140084,PositionY:20.14131,PositionZ:28.92229,RotationX:40.70869,RotationY:359.9635,RotationZ:7.428914,Speed:12.59,SpeedX:-1.709471,SpeedY:-1.440566,SpeedZ:12.38993},
+{PositionX:-2.311514,PositionY:19.99931,PositionZ:30.16001,RotationX:40.70843,RotationY:359.9635,RotationZ:7.429012,Speed:12.58992,SpeedX:-1.709601,SpeedY:-1.439837,SpeedZ:12.38993},
+{PositionX:-2.414376,PositionY:19.91414,PositionZ:30.90265,RotationX:40.70829,RotationY:359.9635,RotationZ:7.429075,Speed:12.58989,SpeedX:-1.709657,SpeedY:-1.439541,SpeedZ:12.38992},
+{PositionX:-2.508695,PositionY:19.79341,PositionZ:31.59509,RotationX:21.71265,RotationY:0.1119355,RotationZ:3.626704,Speed:11.72965,SpeedX:-1.554985,SpeedY:-2.076198,SpeedZ:11.43924},
+{PositionX:-2.65515,PositionY:19.61294,PositionZ:32.70116,RotationX:21.28928,RotationY:0.1146599,RotationZ:3.581817,Speed:11.28025,SpeedX:-1.442994,SpeedY:-1.731664,SpeedZ:11.05274},
+{PositionX:-2.739641,PositionY:19.52346,PositionZ:33.36037,RotationX:21.28913,RotationY:0.1146514,RotationZ:3.581876,Speed:11.19537,SpeedX:-1.402836,SpeedY:-1.505008,SpeedZ:11.0047},
+{PositionX:-2.876487,PositionY:19.40394,PositionZ:34.45821,RotationX:21.28889,RotationY:0.1146364,RotationZ:3.581974,Speed:11.14138,SpeedX:-1.354511,SpeedY:-1.137782,SpeedZ:11.00005},
+{PositionX:-2.956672,PositionY:19.34786,PositionZ:35.11754,RotationX:21.28875,RotationY:0.1146282,RotationZ:3.582034,Speed:11.12806,SpeedX:-1.331227,SpeedY:-0.948541,SpeedZ:11.00736},
+{PositionX:-3.09018,PositionY:19.30991,PositionZ:36.23816,RotationX:21.28852,RotationY:0.1146133,RotationZ:3.582142,Speed:11.38542,SpeedX:-1.331807,SpeedY:-0.2401516,SpeedZ:11.30471},
+{PositionX:-3.170267,PositionY:19.32036,PositionZ:36.92427,RotationX:21.28838,RotationY:0.1146046,RotationZ:3.582207,Speed:11.53381,SpeedX:-1.329855,SpeedY:0.1614793,SpeedZ:11.45575},
+{PositionX:-3.302904,PositionY:19.38239,PositionZ:38.07918,RotationX:21.28815,RotationY:0.1145906,RotationZ:3.582316,Speed:11.68623,SpeedX:-1.318819,SpeedY:0.709143,SpeedZ:11.5899},
+{PositionX:-3.381846,PositionY:19.44172,PositionZ:38.77589,RotationX:21.28801,RotationY:0.1145829,RotationZ:3.582381,Speed:11.74503,SpeedX:-1.310623,SpeedY:0.9754496,SpeedZ:11.63084},
+{PositionX:-3.510795,PositionY:19.54909,PositionZ:39.92721,RotationX:21.28778,RotationY:0.1145677,RotationZ:3.582483,Speed:11.60956,SpeedX:-1.276858,SpeedY:1.064148,SpeedZ:11.48995},
+{PositionX:-3.58697,PositionY:19.61481,PositionZ:40.6109,RotationX:21.28764,RotationY:0.11456,RotationZ:3.776085,Speed:11.53284,SpeedX:-1.264219,SpeedY:1.080421,SpeedZ:11.41231},
+{PositionX:-3.733107,PositionY:19.73067,PositionZ:41.73338,RotationX:19.54452,RotationY:0.1256451,RotationZ:8.42796,Speed:11.35469,SpeedX:-1.550374,SpeedY:1.16758,SpeedZ:11.18758},
+{PositionX:-3.883888,PositionY:19.8319,PositionZ:42.61386,RotationX:18.96338,RotationY:0.1292786,RotationZ:9.203856,Speed:11.24009,SpeedX:-1.930434,SpeedY:1.264791,SpeedZ:11.00061},
+{PositionX:-4.016393,PositionY:19.91296,PositionZ:43.26611,RotationX:18.96322,RotationY:0.1292704,RotationZ:9.20394,Speed:11.19042,SpeedX:-2.204527,SpeedY:1.337568,SpeedZ:10.88928},
+{PositionX:-4.280203,PositionY:20.06112,PositionZ:44.33116,RotationX:16.83279,RotationY:0.1424061,RotationZ:11.14466,Speed:11.05929,SpeedX:-2.760561,SpeedY:1.509156,SpeedZ:10.60235},
+{PositionX:-4.468353,PositionY:20.15887,PositionZ:44.95561,RotationX:16.63911,RotationY:0.1435796,RotationZ:11.91922,Speed:11.00611,SpeedX:-3.131553,SpeedY:1.61685,SpeedZ:10.42658},
+{PositionX:-4.908115,PositionY:20.36995,PositionZ:46.17633,RotationX:16.63871,RotationY:0.1435658,RotationZ:11.91982,Speed:10.96723,SpeedX:-3.824155,SpeedY:1.786666,SpeedZ:10.12244},
+{PositionX:-5.070994,PositionY:20.44432,PositionZ:46.57642,RotationX:16.63861,RotationY:0.1435604,RotationZ:11.91986,Speed:10.97066,SpeedX:-4.020724,SpeedY:1.835188,SpeedZ:10.04098},
+{PositionX:-5.599937,PositionY:20.67739,PositionZ:47.75993,RotationX:16.63833,RotationY:0.1435475,RotationZ:11.91998,Speed:10.99833,SpeedX:-4.521093,SpeedY:1.958658,SpeedZ:9.832937},
+{PositionX:-5.980912,PositionY:20.83975,PositionZ:48.53682,RotationX:16.63814,RotationY:0.143537,RotationZ:11.92006,Speed:11.0207,SpeedX:-4.789948,SpeedY:2.02468,SpeedZ:9.716632},
+{PositionX:-6.178526,PositionY:20.92266,PositionZ:48.92207,RotationX:16.63805,RotationY:0.1435334,RotationZ:11.92011,Speed:11.03143,SpeedX:-4.90774,SpeedY:2.053475,SpeedZ:9.663841},
+{PositionX:-6.795289,PositionY:21.17723,PositionZ:50.06659,RotationX:16.63776,RotationY:0.1435197,RotationZ:11.92023,Speed:11.05951,SpeedX:-5.204602,SpeedY:2.125563,SpeedZ:9.524015},
+{PositionX:-7.223363,PositionY:21.35135,PositionZ:50.82086,RotationX:16.44392,RotationY:0.144686,RotationZ:11.92065,Speed:11.0707,SpeedX:-5.365956,SpeedY:2.169786,SpeedZ:9.437108},
+{PositionX:-7.441759,PositionY:21.43967,PositionZ:51.19567,RotationX:16.63521,RotationY:0.1435196,RotationZ:11.92036,Speed:11.07739,SpeedX:-5.438552,SpeedY:2.191368,SpeedZ:9.398335},
+{PositionX:-8.110927,PositionY:21.7078,PositionZ:52.31279,RotationX:16.6372,RotationY:0.143492,RotationZ:11.92048,Speed:11.09507,SpeedX:-5.612134,SpeedY:2.230948,SpeedZ:9.307384},
+{PositionX:-8.566763,PositionY:21.88873,PositionZ:53.05219,RotationX:16.63701,RotationY:0.1434828,RotationZ:11.92056,Speed:11.10321,SpeedX:-5.704181,SpeedY:2.251473,SpeedZ:9.25605},
+{PositionX:-8.797115,PositionY:21.97974,PositionZ:53.42049,RotationX:16.63691,RotationY:0.1434769,RotationZ:11.9206,Speed:11.10649,SpeedX:-5.744391,SpeedY:2.260386,SpeedZ:9.232921},
+{PositionX:-9.496332,PositionY:22.25455,PositionZ:54.52056,RotationX:16.63663,RotationY:0.1434624,RotationZ:11.92072,Speed:11.11401,SpeedX:-5.845679,SpeedY:2.28269,SpeedZ:9.172705},
+{PositionX:-9.731753,PositionY:22.34668,PositionZ:54.88582,RotationX:16.63653,RotationY:0.1434579,RotationZ:11.92076,Speed:11.11591,SpeedX:-5.873909,SpeedY:2.288868,SpeedZ:9.155416},
+{PositionX:-10.44376,PositionY:22.62428,PositionZ:55.97801,RotationX:16.63625,RotationY:0.1434449,RotationZ:11.92089,Speed:11.12031,SpeedX:-5.945177,SpeedY:2.304392,SpeedZ:9.110755},
+{PositionX:-10.68275,PositionY:22.71718,PositionZ:56.34101,RotationX:16.63615,RotationY:0.143441,RotationZ:11.92093,Speed:11.12144,SpeedX:-5.965084,SpeedY:2.308709,SpeedZ:9.09802},
+{PositionX:-11.47511,PositionY:23.04615,PositionZ:57.61052,RotationX:16.63576,RotationY:0.1434102,RotationZ:11.92107,Speed:10.88999,SpeedX:-5.510733,SpeedY:2.35241,SpeedZ:9.093394},
+{PositionX:-11.69373,PositionY:23.1593,PositionZ:57.98049,RotationX:16.25287,RotationY:0.1457141,RotationZ:11.92177,Speed:11.02427,SpeedX:-5.457633,SpeedY:2.673909,SpeedZ:9.197771},
+{PositionX:-12.20422,PositionY:23.62106,PositionZ:58.98569,RotationX:15.86083,RotationY:0.1480535,RotationZ:358.841,Speed:12.53606,SpeedX:-4.879977,SpeedY:5.148696,SpeedZ:10.33584},
+{PositionX:-12.45116,PositionY:24.00693,PositionZ:59.62824,RotationX:15.86071,RotationY:0.148038,RotationZ:357.8734,Speed:13.17855,SpeedX:-4.111841,SpeedY:6.432016,SpeedZ:10.74225},
+{PositionX:-12.7455,PositionY:24.76913,PositionZ:60.67759,RotationX:13.92397,RotationY:0.1595304,RotationZ:355.9393,Speed:13.29007,SpeedX:-2.627344,SpeedY:7.871174,SpeedZ:10.38112},
+{PositionX:-12.8798,PositionY:25.4457,PositionZ:61.4403,RotationX:11.60002,RotationY:0.1730788,RotationZ:355.5551,Speed:12.79016,SpeedX:-1.539072,SpeedY:8.526447,SpeedZ:9.408465},
+{PositionX:-12.93092,PositionY:25.9745,PositionZ:61.94954,RotationX:10.63216,RotationY:0.1786377,RotationZ:354.7821,Speed:12.27147,SpeedX:-0.8427132,SpeedY:8.806636,SpeedZ:8.504226},
+{PositionX:-12.93329,PositionY:26.87831,PositionZ:62.64806,RotationX:5.790008,RotationY:0.2060563,RotationZ:353.8174,Speed:11.21052,SpeedX:0.1819945,SpeedY:9.076354,SpeedZ:6.577411},
+{PositionX:-12.9099,PositionY:27.2441,PositionZ:62.87404,RotationX:4.832991,RotationY:0.2113967,RotationZ:353.4352,Speed:10.84996,SpeedX:0.5118096,SpeedY:9.126479,SpeedZ:5.845255},
+{PositionX:-12.76736,PositionY:28.34579,PositionZ:63.39467,RotationX:2.884866,RotationY:0.2221981,RotationZ:352.4632,Speed:10.07152,SpeedX:1.409602,SpeedY:9.179483,SpeedZ:3.89687},
+{PositionX:-12.70001,PositionY:28.71355,PositionZ:63.52562,RotationX:2.884787,RotationY:0.2221806,RotationZ:352.4632,Speed:9.930861,SpeedX:1.638406,SpeedY:9.184396,SpeedZ:3.403599},
+{PositionX:-12.42988,PositionY:29.89212,PositionZ:63.87674,RotationX:2.884484,RotationY:0.222121,RotationZ:352.4633,Speed:8.710877,SpeedX:2.034828,SpeedY:8.160693,SpeedZ:2.267585},
+{PositionX:-12.38796,PositionY:30.04761,PositionZ:63.91764,RotationX:2.884436,RotationY:0.2221144,RotationZ:352.3046,Speed:8.636586,SpeedX:2.08611,SpeedY:8.095206,SpeedZ:2.169423},
+{PositionX:-12.13179,PositionY:30.75555,PositionZ:64.13335,RotationX:2.884095,RotationY:0.2220749,RotationZ:344.8575,Speed:6.061772,SpeedX:2.249526,SpeedY:5.349994,SpeedZ:1.749938},
+{PositionX:-11.97678,PositionY:31.03372,PositionZ:64.23347,RotationX:2.883923,RotationY:0.2220544,RotationZ:345.2446,Speed:5.559726,SpeedX:2.587876,SpeedY:4.622364,SpeedZ:1.687366},
+{PositionX:-11.66978,PositionY:31.41919,PositionZ:64.39735,RotationX:2.88364,RotationY:0.2220216,RotationZ:344.8575,Speed:5.144502,SpeedX:3.203946,SpeedY:3.668946,SpeedZ:1.655135},
+{PositionX:-11.4565,PositionY:31.60864,PositionZ:64.49577,RotationX:2.88347,RotationY:0.2220026,RotationZ:347.1801,Speed:5.036278,SpeedX:3.561924,SpeedY:3.149775,SpeedZ:1.660035},
+{PositionX:-10.99817,PositionY:31.84888,PositionZ:64.69479,RotationX:2.883128,RotationY:0.2219622,RotationZ:351.0547,Speed:4.501892,SpeedX:3.879367,SpeedY:1.539992,SpeedZ:1.686998},
+{PositionX:-10.8395,PositionY:31.88123,PositionZ:64.76234,RotationX:2.883014,RotationY:0.2219497,RotationZ:355.2653,Speed:4.413784,SpeedX:3.960081,SpeedY:0.945831,SpeedZ:1.704302},
+{PositionX:-10.43763,PositionY:31.86082,PositionZ:64.93545,RotationX:2.88273,RotationY:0.2219153,RotationZ:357.2518,Speed:4.431585,SpeedX:4.033825,SpeedY:-0.5012444,SpeedZ:1.765206},
+{PositionX:-10.19395,PositionY:31.77962,PositionZ:65.04224,RotationX:2.88256,RotationY:0.2218947,RotationZ:356.0906,Speed:4.651806,SpeedX:4.06658,SpeedY:-1.362459,SpeedZ:1.801646},
+{PositionX:-9.695431,PositionY:31.45056,PositionZ:65.25735,RotationX:2.354508,RotationY:0.2247835,RotationZ:350.2803,Speed:5.549562,SpeedX:4.209891,SpeedY:-3.128994,SpeedZ:1.812139},
+{PositionX:-9.525333,PositionY:31.30293,PositionZ:65.32824,RotationX:2.354395,RotationY:0.2247704,RotationZ:350.2804,Speed:5.848126,SpeedX:4.251616,SpeedY:-3.59037,SpeedZ:1.798218},
+{PositionX:-9.017263,PositionY:30.76612,PositionZ:65.53287,RotationX:2.354054,RotationY:0.224731,RotationZ:350.2804,Speed:6.576888,SpeedX:4.217073,SpeedY:-4.753718,SpeedZ:1.695261},
+{PositionX:-8.852027,PositionY:30.56154,PositionZ:65.59718,RotationX:2.353941,RotationY:0.2247162,RotationZ:350.2804,Speed:6.747275,SpeedX:4.155073,SpeedY:-5.055928,SpeedZ:1.642769},
+{PositionX:-8.379365,PositionY:29.89457,PositionZ:65.77497,RotationX:2.3536,RotationY:0.224676,RotationZ:350.2805,Speed:7.047311,SpeedX:3.863778,SpeedY:-5.711863,SpeedZ:1.452737},
+{PositionX:-8.087426,PositionY:29.4196,PositionZ:65.88024,RotationX:2.740673,RotationY:0.2225037,RotationZ:350.2804,Speed:7.113539,SpeedX:3.623468,SpeedY:-5.977379,SpeedZ:1.320549},
+{PositionX:-7.691134,PositionY:28.84849,PositionZ:66.03688,RotationX:16.2962,RotationY:0.1449493,RotationZ:337.8735,Speed:7.190455,SpeedX:4.218294,SpeedY:-5.551969,SpeedZ:1.756213},
+{PositionX:-7.59576,PositionY:28.74336,PositionZ:66.07904,RotationX:16.29616,RotationY:0.1449448,RotationZ:337.8735,Speed:7.296247,SpeedX:4.497796,SpeedY:-5.406937,SpeedZ:1.941669},
+{PositionX:-6.914763,PositionY:28.16445,PositionZ:66.40352,RotationX:16.29585,RotationY:0.1449107,RotationZ:337.8736,Speed:8.197327,SpeedX:6.056391,SpeedY:-4.659388,SpeedZ:2.967559},
+{PositionX:-6.520015,PositionY:27.89759,PositionZ:66.6022,RotationX:9.161773,RotationY:0.1864285,RotationZ:348.6532,Speed:8.662184,SpeedX:6.617447,SpeedY:-4.478532,SpeedZ:3.344485},
+{PositionX:-5.842646,PositionY:27.49293,PositionZ:66.95618,RotationX:9.076976,RotationY:0.1868709,RotationZ:348.781,Speed:8.669774,SpeedX:6.81843,SpeedY:-3.952946,SpeedZ:3.61223},
+{PositionX:-5.425602,PositionY:27.27328,PositionZ:67.18143,RotationX:9.076831,RotationY:0.186849,RotationZ:348.7811,Speed:8.723305,SpeedX:6.955257,SpeedY:-3.671395,SpeedZ:3.773766},
+{PositionX:-4.713351,PositionY:26.93578,PositionZ:67.57828,RotationX:9.463893,RotationY:0.1846171,RotationZ:348.7808,Speed:8.873796,SpeedX:7.167454,SpeedY:-3.322032,SpeedZ:4.041774},
+{PositionX:-4.276833,PositionY:26.74802,PositionZ:67.82904,RotationX:9.657284,RotationY:0.1834946,RotationZ:348.7807,Speed:8.972228,SpeedX:7.280472,SpeedY:-3.140583,SpeedZ:4.199087},
+{PositionX:-3.536902,PositionY:26.45772,PositionZ:68.26775,RotationX:9.850811,RotationY:0.1823563,RotationZ:348.9742,Speed:9.125938,SpeedX:7.431891,SpeedY:-2.859431,SpeedZ:4.457959},
+{PositionX:-3.086934,PositionY:26.29631,PositionZ:68.54265,RotationX:9.850662,RotationY:0.1823362,RotationZ:348.9743,Speed:9.20811,SpeedX:7.504657,SpeedY:-2.701476,SpeedZ:4.601243},
+{PositionX:-2.327921,PositionY:26.04719,PositionZ:69.01643,RotationX:9.463105,RotationY:0.1845021,RotationZ:348.7811,Speed:9.328259,SpeedX:7.618274,SpeedY:-2.454137,SpeedZ:4.791194},
+{PositionX:-1.865462,PositionY:25.90844,PositionZ:69.30779,RotationX:9.656499,RotationY:0.1833807,RotationZ:346.8456,Speed:9.41576,SpeedX:7.712415,SpeedY:-2.323697,SpeedZ:4.876026},
+{PositionX:-1.075862,PositionY:25.69086,PositionZ:69.79839,RotationX:9.65637,RotationY:0.1833425,RotationZ:345.6825,Speed:9.600934,SpeedX:7.950597,SpeedY:-2.156255,SpeedZ:4.931178},
+{PositionX:-0.5910596,PositionY:25.56733,PositionZ:70.09354,RotationX:9.849756,RotationY:0.18222,RotationZ:345.1018,Speed:9.697929,SpeedX:8.085563,SpeedY:-2.070535,SpeedZ:4.938258},
+{PositionX:0.0662899,PositionY:25.4097,PositionZ:70.48642,RotationX:9.849676,RotationY:0.1821891,RotationZ:345.1015,Speed:9.801332,SpeedX:8.240156,SpeedY:-1.969607,SpeedZ:4.928144},
+{PositionX:0.9023588,PositionY:25.22319,PositionZ:70.97436,RotationX:9.655775,RotationY:0.1832515,RotationZ:344.9081,Speed:9.890392,SpeedX:8.395725,SpeedY:-1.854548,SpeedZ:4.887977},
+{PositionX:1.410491,PositionY:25.11629,PositionZ:71.26469,RotationX:9.849165,RotationY:0.1821304,RotationZ:344.7144,Speed:9.930835,SpeedX:8.474087,SpeedY:-1.79344,SpeedZ:4.857459},
+{PositionX:2.436283,PositionY:24.90919,PositionZ:71.84755,RotationX:11.78553,RotationY:0.1710116,RotationZ:344.1313,Speed:10.01707,SpeedX:8.568879,SpeedY:-1.726038,SpeedZ:4.892521},
+{PositionX:2.779509,PositionY:24.84138,PositionZ:72.04367,RotationX:12.16821,RotationY:0.1687898,RotationZ:344.1309,Speed:10.03766,SpeedX:8.583641,SpeedY:-1.711043,SpeedZ:4.914075},
+{PositionX:3.810381,PositionY:24.641,PositionZ:72.63715,RotationX:11.9788,RotationY:0.1698363,RotationZ:344.1313,Speed:10.07523,SpeedX:8.598686,SpeedY:-1.672792,SpeedZ:4.977411},
+{PositionX:4.326204,PositionY:24.54246,PositionZ:72.93603,RotationX:11.97865,RotationY:0.1698152,RotationZ:344.1313,Speed:10.08606,SpeedX:8.60181,SpeedY:-1.654966,SpeedZ:4.99985},
+{PositionX:5.012708,PositionY:24.40945,PositionZ:73.33546,RotationX:11.97845,RotationY:0.1697858,RotationZ:344.1314,Speed:10.07915,SpeedX:8.581946,SpeedY:-1.68008,SpeedZ:5.011671},
+{PositionX:5.526197,PositionY:24.30779,PositionZ:73.63534,RotationX:11.97829,RotationY:0.1697684,RotationZ:344.1314,Speed:10.06962,SpeedX:8.562714,SpeedY:-1.707037,SpeedZ:5.01629},
+{PositionX:6.585337,PositionY:24.10677,PositionZ:74.24432,RotationX:22.10122,RotationY:0.1085255,RotationZ:328.5676,Speed:10.61535,SpeedX:9.129911,SpeedY:-1.592973,SpeedZ:5.176167},
+{PositionX:7.162223,PositionY:24.02115,PositionZ:74.55897,RotationX:22.10107,RotationY:0.1085171,RotationZ:328.5676,Speed:11.06497,SpeedX:9.627577,SpeedY:-1.44212,SpeedZ:5.259612},
+{PositionX:7.95424,PositionY:23.91995,PositionZ:74.97726,RotationX:22.10085,RotationY:0.108504,RotationZ:328.5677,Speed:11.30232,SpeedX:9.937113,SpeedY:-1.257872,SpeedZ:5.235835},
+{PositionX:9.162827,PositionY:23.78983,PositionZ:75.59524,RotationX:22.1005,RotationY:0.1084853,RotationZ:328.5677,Speed:11.38705,SpeedX:10.10788,SpeedY:-1.053415,SpeedZ:5.136727},
+{PositionX:9.568294,PositionY:23.75078,PositionZ:75.79871,RotationX:22.10112,RotationY:0.2410067,RotationZ:328.5723,Speed:11.39301,SpeedX:10.13516,SpeedY:-1.003128,SpeedZ:5.106151},
+{PositionX:10.5859,PositionY:23.65981,PositionZ:76.3009,RotationX:22.11243,RotationY:2.681757,RotationZ:328.6568,Speed:11.39408,SpeedX:10.19143,SpeedY:-0.9074888,SpeedZ:5.013612},
+{PositionX:11.61124,PositionY:23.57622,PositionZ:76.78249,RotationX:22.12637,RotationY:8.642697,RotationZ:329.2519,Speed:11.35887,SpeedX:10.274,SpeedY:-0.8365601,SpeedZ:4.771685},
+{PositionX:12.02547,PositionY:23.54439,PositionZ:76.96387,RotationX:22.12561,RotationY:11.85352,RotationZ:329.3642,Speed:11.34488,SpeedX:10.33855,SpeedY:-0.8139188,SpeedZ:4.599805},
+{PositionX:13.07969,PositionY:23.46743,PositionZ:77.37067,RotationX:22.08935,RotationY:21.3616,RotationZ:329.6938,Speed:11.33669,SpeedX:10.60458,SpeedY:-0.7742332,SpeedZ:3.932425},
+{PositionX:13.72868,PositionY:23.42208,PositionZ:77.57201,RotationX:22.42344,RotationY:27.7979,RotationZ:329.9129,Speed:11.35817,SpeedX:10.81907,SpeedY:-0.765012,SpeedZ:3.372024},
+{PositionX:14.84157,PositionY:23.34668,PositionZ:77.81262,RotationX:21.88741,RotationY:39.25556,RotationZ:330.2775,Speed:11.44366,SpeedX:11.21225,SpeedY:-0.7582969,SpeedZ:2.160497},
+{PositionX:15.52743,PositionY:23.30143,PositionZ:77.88961,RotationX:22.14798,RotationY:46.42503,RotationZ:330.8777,Speed:11.5341,SpeedX:11.43574,SpeedY:-0.7584031,SpeedZ:1.297807},
+{PositionX:16.92822,PositionY:23.20901,PositionZ:77.87077,RotationX:21.86333,RotationY:59.30502,RotationZ:331.2072,Speed:11.78755,SpeedX:11.74401,SpeedY:-0.7752622,SpeedZ:-0.6508932},
+{PositionX:17.40033,PositionY:23.17763,PositionZ:77.80913,RotationX:21.78088,RotationY:62.56181,RotationZ:331.2788,Speed:11.90028,SpeedX:11.79732,SpeedY:-0.7813938,SpeedZ:-1.352522},
+{PositionX:18.57967,PositionY:23.09816,PositionZ:77.53389,RotationX:21.62245,RotationY:68.45528,RotationZ:331.3951,Speed:12.20628,SpeedX:11.78381,SpeedY:-0.7935697,SpeedZ:-3.083067},
+{PositionX:19.2803,PositionY:23.05005,PositionZ:77.29058,RotationX:21.55778,RotationY:70.75137,RotationZ:331.4355,Speed:12.38743,SpeedX:11.68078,SpeedY:-0.7974166,SpeedZ:-4.046215},
+{PositionX:20.42579,PositionY:22.96973,PositionZ:76.77145,RotationX:21.48781,RotationY:73.17679,RotationZ:331.4751,Speed:12.655,SpeedX:11.39407,SpeedY:-0.7975941,SpeedZ:-5.448672},
+{PositionX:21.0965,PositionY:22.92172,PositionZ:76.40168,RotationX:21.46191,RotationY:74.06041,RotationZ:331.4886,Speed:12.78695,SpeedX:11.18043,SpeedY:-0.7945694,SpeedZ:-6.154078},
+{PositionX:22.18425,PositionY:22.84233,PositionZ:75.70755,RotationX:21.43546,RotationY:74.95433,RotationZ:331.5017,Speed:12.95621,SpeedX:10.80297,SpeedY:-0.7861477,SpeedZ:-7.109241},
+{PositionX:22.8191,PositionY:22.79516,PositionZ:75.25317,RotationX:21.42609,RotationY:75.26847,RotationZ:331.5062,Speed:13.03023,SpeedX:10.58169,SpeedY:-0.7799882,SpeedZ:-7.56349},
+{PositionX:23.84991,PositionY:22.71739,PositionZ:74.44736,RotationX:21.41677,RotationY:75.57824,RotationZ:331.5104,Speed:13.11698,SpeedX:10.24365,SpeedY:-0.7693141,SpeedZ:-8.156645},
+{PositionX:24.45376,PositionY:22.67122,PositionZ:73.94082,RotationX:21.41354,RotationY:75.68461,RotationZ:331.5117,Speed:13.15209,SpeedX:10.06487,SpeedY:-0.7631552,SpeedZ:-8.43169},
+{PositionX:25.43952,PositionY:22.59503,PositionZ:73.06759,RotationX:21.41036,RotationY:75.7878,RotationZ:331.513,Speed:13.19099,SpeedX:9.810184,SpeedY:-0.7538556,SpeedZ:-8.786027},
+{PositionX:26.02014,PositionY:22.55025,PositionZ:72.52876,RotationX:20.63547,RotationY:75.79625,RotationZ:331.5038,Speed:13.2152,SpeedX:9.677768,SpeedY:-0.7401013,SpeedZ:-8.968526},
+{PositionX:26.78287,PositionY:22.49438,PositionZ:71.79192,RotationX:19.47273,RotationY:75.78551,RotationZ:331.8779,Speed:13.27669,SpeedX:9.515735,SpeedY:-0.6830693,SpeedZ:-9.23335},
+{PositionX:27.68392,PositionY:22.38805,PositionZ:70.91075,RotationX:8.632315,RotationY:75.46031,RotationZ:352.3217,Speed:12.4068,SpeedX:8.841772,SpeedY:-1.348953,SpeedZ:-8.598372},
+{PositionX:28.02363,PositionY:22.30457,PositionZ:70.58199,RotationX:5.188656,RotationY:75.36079,RotationZ:1.113045,Speed:12.04327,SpeedX:8.545007,SpeedY:-1.939313,SpeedZ:-8.262104},
+{PositionX:28.83958,PositionY:21.99431,PositionZ:69.80421,RotationX:5.534665,RotationY:75.37799,RotationZ:1.113849,Speed:11.60839,SpeedX:8.066071,SpeedY:-3.389517,SpeedZ:-7.629179},
+{PositionX:29.30243,PositionY:21.74433,PositionZ:69.37141,RotationX:5.921432,RotationY:75.39185,RotationZ:1.114882,Speed:11.34871,SpeedX:7.720783,SpeedY:-4.17216,SpeedZ:-7.195545},
+{PositionX:30.01498,PositionY:21.24203,PositionZ:68.72468,RotationX:8.631473,RotationY:75.47589,RotationZ:4.1536,Speed:10.71097,SpeedX:6.969272,SpeedY:-5.220454,SpeedZ:-6.237072},
+{PositionX:30.27686,PositionY:21.01998,PositionZ:68.49689,RotationX:10.16184,RotationY:75.52312,RotationZ:7.606151,Speed:10.39487,SpeedX:6.632163,SpeedY:-5.517039,SpeedZ:-5.799146},
+{PositionX:30.8763,PositionY:20.44644,PositionZ:68.02211,RotationX:10.56697,RotationY:75.53625,RotationZ:12.68406,Speed:9.315707,SpeedX:5.849363,SpeedY:-5.737526,SpeedZ:-4.432624},
+{PositionX:31.20412,PositionY:20.10475,PositionZ:67.80464,RotationX:10.56689,RotationY:75.53646,RotationZ:13.84515,Speed:8.681923,SpeedX:5.465404,SpeedY:-5.702458,SpeedZ:-3.603764},
+{PositionX:31.61129,PositionY:19.65581,PositionZ:67.58755,RotationX:10.56679,RotationY:75.53658,RotationZ:13.84565,Speed:7.966827,SpeedX:5.042713,SpeedY:-5.608113,SpeedZ:-2.567186},
+{PositionX:32.0805,PositionY:19.10132,PositionZ:67.41862,RotationX:10.56667,RotationY:75.53663,RotationZ:13.84538,Speed:7.355592,SpeedX:4.614546,SpeedY:-5.540269,SpeedZ:-1.454684},
+{PositionX:32.25758,PositionY:18.88086,PositionZ:67.37938,RotationX:10.56662,RotationY:75.53664,RotationZ:13.84527,Speed:7.18069,SpeedX:4.466218,SpeedY:-5.522573,SpeedZ:-1.056595},
+{PositionX:32.6821,PositionY:18.33566,PositionZ:67.35043,RotationX:12.53635,RotationY:74.4418,RotationZ:15.00272,Speed:6.874484,SpeedX:4.209614,SpeedY:-5.434461,SpeedZ:-0.06567298},
+{PositionX:33.01159,PositionY:17.90691,PositionZ:67.3989,RotationX:14.56947,RotationY:71.13733,RotationZ:15.35237,Speed:6.796302,SpeedX:4.116879,SpeedY:-5.358663,SpeedZ:0.7250877},
+{PositionX:33.25529,PositionY:17.58838,PositionZ:67.47592,RotationX:14.6796,RotationY:67.20062,RotationZ:15.28457,Speed:6.82062,SpeedX:4.067259,SpeedY:-5.317881,SpeedZ:1.303228},
+{PositionX:33.64996,PositionY:17.0605,PositionZ:67.67699,RotationX:15.29062,RotationY:58.57948,RotationZ:15.11236,Speed:6.93949,SpeedX:3.918438,SpeedY:-5.284756,SpeedZ:2.207649},
+{PositionX:33.80151,PositionY:16.84974,PositionZ:67.78141,RotationX:15.0022,RotationY:54.57964,RotationZ:15.01761,Speed:6.999921,SpeedX:3.823426,SpeedY:-5.281068,SpeedZ:2.547673},
+{PositionX:34.22144,PositionY:16.2166,PositionZ:68.16868,RotationX:15.64756,RotationY:41.43751,RotationZ:14.6721,Speed:7.17764,SpeedX:3.383867,SpeedY:-5.294519,SpeedZ:3.469297},
+{PositionX:34.34668,PositionY:16.00463,PositionZ:68.32003,RotationX:15.72111,RotationY:36.78343,RotationZ:14.53527,Speed:7.233747,SpeedX:3.189028,SpeedY:-5.308008,SpeedZ:3.739284},
+{PositionX:34.61914,PositionY:15.47187,PositionZ:68.74233,RotationX:17.02103,RotationY:24.80849,RotationZ:14.54911,Speed:7.382375,SpeedX:2.608527,SpeedY:-5.348665,SpeedZ:4.368848},
+{PositionX:34.79,PositionY:15.04041,PositionZ:69.12321,RotationX:19.785,RotationY:15.67607,RotationZ:14.24809,Speed:7.559682,SpeedX:2.075588,SpeedY:-5.420164,SpeedZ:4.843816},
+{PositionX:34.88805,PositionY:14.71175,PositionZ:69.43108,RotationX:19.79432,RotationY:10.10274,RotationZ:14.05713,Speed:7.7075,SpeedX:1.639991,SpeedY:-5.492338,SpeedZ:5.15269},
+{PositionX:35.00128,PositionY:14.04265,PositionZ:70.08599,RotationX:20.16624,RotationY:2.574013,RotationZ:13.79892,Speed:7.944135,SpeedX:0.7167966,SpeedY:-5.621079,SpeedZ:5.567669},
+{PositionX:35.01623,PositionY:13.5894,PositionZ:70.54092,RotationX:20.15156,RotationY:359.6411,RotationZ:13.69929,Speed:8.069341,SpeedX:0.1172331,SpeedY:-5.687303,SpeedZ:5.723207},
+{PositionX:35.00655,PositionY:13.36115,PositionZ:70.77152,RotationX:20.14525,RotationY:358.6121,RotationZ:13.66455,Speed:8.124997,SpeedX:-0.168062,SpeedY:-5.713868,SpeedZ:5.773996},
+{PositionX:34.93619,PositionY:12.78617,PositionZ:71.35513,RotationX:20.90803,RotationY:356.9044,RotationZ:13.60519,Speed:8.280775,SpeedX:-0.8274029,SpeedY:-5.776348,SpeedZ:5.875411},
+{PositionX:34.80648,PositionY:12.20458,PositionZ:71.9495,RotationX:22.45019,RotationY:355.9869,RotationZ:13.56978,Speed:8.485958,SpeedX:-1.404476,SpeedY:-5.84586,SpeedZ:5.988726},
+{PositionX:34.70365,PositionY:11.85208,PositionZ:72.31248,RotationX:23.99579,RotationY:355.6546,RotationZ:13.55335,Speed:8.627452,SpeedX:-1.710212,SpeedY:-5.889677,SpeedZ:6.067933},
+{PositionX:34.49643,PositionY:11.25814,PositionZ:72.93013,RotationX:24.76855,RotationY:355.3333,RotationZ:13.5396,Speed:8.889503,SpeedX:-2.152248,SpeedY:-5.969234,SpeedZ:6.225698},
+{PositionX:34.30337,PositionY:10.77947,PositionZ:73.43273,RotationX:24.76724,RotationY:355.1983,RotationZ:13.53503,Speed:9.044829,SpeedX:-2.444045,SpeedY:-6.001389,SpeedZ:6.310224},
+{PositionX:34.14516,PositionY:10.41879,PositionZ:73.81448,RotationX:26.70188,RotationY:355.1168,RotationZ:13.52447,Speed:9.162741,SpeedX:-2.632965,SpeedY:-6.026583,SpeedZ:6.379939},
+{PositionX:33.918,PositionY:9.931662,PositionZ:74.33796,RotationX:30.57529,RotationY:355.0245,RotationZ:13.89023,Speed:9.444349,SpeedX:-2.865199,SpeedY:-6.121739,SpeedZ:6.596262},
+{PositionX:33.61214,PositionY:9.313297,PositionZ:75.01793,RotationX:30.96215,RotationY:354.9861,RotationZ:13.88689,Speed:9.763799,SpeedX:-3.096141,SpeedY:-6.215236,SpeedZ:6.864148},
+{PositionX:33.42013,PositionY:8.94029,PositionZ:75.43488,RotationX:30.9619,RotationY:354.9747,RotationZ:13.88654,Speed:9.879473,SpeedX:-3.196086,SpeedY:-6.23358,SpeedZ:6.966455},
+{PositionX:33.06504,PositionY:8.406668,PositionZ:76.19186,RotationX:16.38502,RotationY:355.1084,RotationZ:6.726414,Speed:9.917797,SpeedX:-3.616291,SpeedY:-5.025059,SpeedZ:7.748156},
+{PositionX:32.83881,PositionY:8.161015,PositionZ:76.67963,RotationX:16.38443,RotationY:355.1049,RotationZ:6.726166,Speed:9.869466,SpeedX:-3.765086,SpeedY:-4.102973,SpeedZ:8.14838},
+{PositionX:32.42068,PositionY:7.963587,PositionZ:77.59176,RotationX:16.38421,RotationY:355.1015,RotationZ:6.726211,Speed:10.46938,SpeedX:-4.300163,SpeedY:-1.39464,SpeedZ:9.443069},
+{PositionX:32.14127,PositionY:8.005098,PositionZ:78.20817,RotationX:16.38409,RotationY:355.1004,RotationZ:6.726277,Speed:11.32953,SpeedX:-4.657103,SpeedY:0.6893225,SpeedZ:10.30507},
+{PositionX:31.53469,PositionY:8.453218,PositionZ:79.561,RotationX:16.38386,RotationY:355.0992,RotationZ:6.726449,Speed:13.46748,SpeedX:-5.14579,SpeedY:4.653155,SpeedZ:11.54305},
+{PositionX:31.32716,PositionY:8.689202,PositionZ:80.02728,RotationX:16.38379,RotationY:355.099,RotationZ:6.726511,Speed:13.9728,SpeedX:-5.185411,SpeedY:5.666945,SpeedZ:11.67204},
+{PositionX:30.81917,PositionY:9.40302,PositionZ:81.17415,RotationX:16.38361,RotationY:355.0987,RotationZ:6.726675,Speed:14.51258,SpeedX:-5.030483,SpeedY:7.435607,SpeedZ:11.40268},
+{PositionX:30.34298,PositionY:10.22167,PositionZ:82.25514,RotationX:16.38342,RotationY:355.0985,RotationZ:6.726845,Speed:14.3233,SpeedX:-4.684123,SpeedY:8.322592,SpeedZ:10.67475},
+{PositionX:30.1627,PositionY:10.56373,PositionZ:82.66568,RotationX:16.38336,RotationY:355.0985,RotationZ:6.726913,Speed:14.15158,SpeedX:-4.53749,SpeedY:8.505726,SpeedZ:10.36007},
+{PositionX:29.73573,PositionY:11.4262,PositionZ:83.64056,RotationX:16.38317,RotationY:355.0984,RotationZ:6.727079,Speed:13.59592,SpeedX:-4.201798,SpeedY:8.628394,SpeedZ:9.630414},
+{PositionX:29.41158,PositionY:12.11926,PositionZ:84.3802,RotationX:16.38302,RotationY:355.0984,RotationZ:6.920865,Speed:13.26643,SpeedX:-4.02757,SpeedY:8.652142,SpeedZ:9.215064},
+{PositionX:29.17899,PositionY:12.61617,PositionZ:84.90331,RotationX:14.44757,RotationY:355.1155,RotationZ:7.119055,Speed:12.62126,SpeedX:-3.866232,SpeedY:8.2569,SpeedZ:8.727662},
+{PositionX:28.73181,PositionY:13.57599,PositionZ:85.84566,RotationX:12.12228,RotationY:355.1357,RotationZ:7.123936,Speed:11.59852,SpeedX:-3.687162,SpeedY:7.95164,SpeedZ:7.596186},
+{PositionX:28.52523,PositionY:13.96372,PositionZ:86.25779,RotationX:21.9331,RotationY:355.0471,RotationZ:14.61479,Speed:9.942372,SpeedX:-3.398645,SpeedY:6.372418,SpeedZ:6.833174},
+{PositionX:28.16891,PositionY:14.44055,PositionZ:86.92364,RotationX:22.05128,RotationY:355.046,RotationZ:14.70352,Speed:8.783989,SpeedX:-3.625427,SpeedY:4.39319,SpeedZ:6.6869},
+{PositionX:28.01613,PositionY:14.58546,PositionZ:87.19389,RotationX:22.05117,RotationY:355.046,RotationZ:14.70355,Speed:8.603423,SpeedX:-3.776317,SpeedY:3.758877,SpeedZ:6.754936},
+{PositionX:27.5232,PositionY:14.88645,PositionZ:88.02326,RotationX:22.05083,RotationY:355.046,RotationZ:14.70365,Speed:8.419038,SpeedX:-4.206344,SpeedY:2.094478,SpeedZ:6.985702},
+{PositionX:27.34879,PositionY:14.94623,PositionZ:88.30477,RotationX:22.05073,RotationY:355.046,RotationZ:14.70368,Speed:8.420572,SpeedX:-4.327579,SpeedY:1.599496,SpeedZ:7.044127},
+{PositionX:26.80976,PositionY:15.01324,PositionZ:89.15192,RotationX:20.50119,RotationY:355.0607,RotationZ:13.15983,Speed:8.393471,SpeedX:-4.517421,SpeedY:0.1949784,SpeedZ:7.071438},
+{PositionX:26.44332,PositionY:14.97105,PositionZ:89.71439,RotationX:20.50097,RotationY:355.0607,RotationZ:13.15989,Speed:8.430825,SpeedX:-4.583828,SpeedY:-0.643773,SpeedZ:7.046481},
+{PositionX:26.07221,PositionY:14.86827,PositionZ:90.27486,RotationX:20.50076,RotationY:355.0607,RotationZ:13.15995,Speed:8.530529,SpeedX:-4.641021,SpeedY:-1.389691,SpeedZ:7.021368},
+{PositionX:25.79125,PositionY:14.75553,PositionZ:90.69382,RotationX:20.50059,RotationY:355.0606,RotationZ:13.16,Speed:8.63096,SpeedX:-4.677945,SpeedY:-1.89386,SpeedZ:7.001685},
+{PositionX:25.22413,PositionY:14.44965,PositionZ:91.52757,RotationX:20.50028,RotationY:355.0606,RotationZ:13.16011,Speed:8.857462,SpeedX:-4.733694,SpeedY:-2.773232,SpeedZ:6.953845},
+{PositionX:25.034,PositionY:14.32651,PositionZ:91.80394,RotationX:20.50017,RotationY:355.0606,RotationZ:13.16015,Speed:8.932092,SpeedX:-4.745955,SpeedY:-3.030592,SpeedZ:6.933519},
+{PositionX:24.46233,PositionY:13.903,PositionZ:92.62675,RotationX:20.49986,RotationY:355.0606,RotationZ:13.16026,Speed:9.129884,SpeedX:-4.76104,SpeedY:-3.702649,SpeedZ:6.854025},
+{PositionX:24.27184,PositionY:13.74592,PositionZ:92.89848,RotationX:20.49975,RotationY:355.0606,RotationZ:13.1603,Speed:9.183681,SpeedX:-4.758675,SpeedY:-3.894997,SpeedZ:6.820851},
+{PositionX:23.70364,PositionY:13.23379,PositionZ:93.70801,RotationX:22.04865,RotationY:355.046,RotationZ:13.1551,Speed:9.336303,SpeedX:-4.715474,SpeedY:-4.403041,SpeedZ:6.748636},
+{PositionX:23.51595,PositionY:13.05103,PositionZ:93.97617,RotationX:23.19684,RotationY:355.0349,RotationZ:13.53366,Speed:9.378154,SpeedX:-4.693272,SpeedY:-4.547833,SpeedZ:6.726083},
+{PositionX:22.95926,PositionY:12.47201,PositionZ:94.77676,RotationX:23.59744,RotationY:355.031,RotationZ:13.53678,Speed:9.493983,SpeedX:-4.612425,SpeedY:-4.92859,SpeedZ:6.676096},
+{PositionX:22.77612,PositionY:12.27038,PositionZ:95.04192,RotationX:23.59735,RotationY:355.031,RotationZ:13.53682,Speed:9.516772,SpeedX:-4.58147,SpeedY:-5.031302,SpeedZ:6.653201},
+{PositionX:22.32431,PositionY:11.75001,PositionZ:95.70319,RotationX:25.1463,RotationY:355.0157,RotationZ:13.53061,Speed:9.584249,SpeedX:-4.494643,SpeedY:-5.264525,SpeedZ:6.628785},
+{PositionX:21.85746,PositionY:11.29171,PositionZ:96.40946,RotationX:14.63607,RotationY:355.1136,RotationZ:6.733117,Speed:9.647691,SpeedX:-4.701992,SpeedY:-4.347138,SpeedZ:7.216066},
+{PositionX:21.66673,PositionY:11.14254,PositionZ:96.70805,RotationX:14.63561,RotationY:355.1136,RotationZ:6.924348,Speed:9.623511,SpeedX:-4.747943,SpeedY:-3.856686,SpeedZ:7.429332},
+{PositionX:21.07698,PositionY:10.80548,PositionZ:97.65723,RotationX:14.63534,RotationY:355.1136,RotationZ:7.120425,Speed:9.816501,SpeedX:-4.96666,SpeedY:-2.486382,SpeedZ:8.094064},
+{PositionX:20.67152,PositionY:10.66157,PositionZ:98.32761,RotationX:14.63516,RotationY:355.1136,RotationZ:7.120523,Speed:9.998022,SpeedX:-5.075612,SpeedY:-1.717809,SpeedZ:8.440838},
+{PositionX:20.36356,PositionY:10.59027,PositionZ:98.84473,RotationX:14.63502,RotationY:355.1136,RotationZ:7.120596,Speed:10.1189,SpeedX:-5.128444,SpeedY:-1.198886,SpeedZ:8.640242},
+{PositionX:19.84707,PositionY:10.52937,PositionZ:99.72509,RotationX:14.63479,RotationY:355.1135,RotationZ:7.120718,Speed:10.26919,SpeedX:-5.164532,SpeedY:-0.4852867,SpeedZ:8.862746},
+{PositionX:19.53666,PositionY:10.52328,PositionZ:100.2611,RotationX:14.63466,RotationY:355.1135,RotationZ:7.120792,Speed:10.34021,SpeedX:-5.168864,SpeedY:-0.1122735,SpeedZ:8.9549},
+{PositionX:18.91535,PositionY:10.57737,PositionZ:101.3477,RotationX:14.63438,RotationY:355.1135,RotationZ:7.12094,Speed:10.497,SpeedX:-5.173367,SpeedY:0.6180871,SpeedZ:9.112694},
+{PositionX:18.70818,PositionY:10.61445,PositionZ:101.7137,RotationX:14.63429,RotationY:355.1135,RotationZ:7.12099,Speed:10.55233,SpeedX:-5.173545,SpeedY:0.8547556,SpeedZ:9.157263},
+{PositionX:18.19021,PositionY:10.74668,PositionZ:102.6358,RotationX:14.63407,RotationY:355.1135,RotationZ:7.121114,Speed:10.70266,SpeedX:-5.174187,SpeedY:1.419586,SpeedZ:9.26064},
+{PositionX:17.67324,PositionY:10.92842,PositionZ:103.5652,RotationX:14.63384,RotationY:355.1135,RotationZ:7.12124,Speed:10.82679,SpeedX:-5.161939,SpeedY:1.897836,SpeedZ:9.325872},
+{PositionX:17.46694,PositionY:11.01321,PositionZ:103.9383,RotationX:14.63375,RotationY:355.1135,RotationZ:7.121289,Speed:10.86976,SpeedX:-5.154611,SpeedY:2.067551,SpeedZ:9.343822},
+{PositionX:16.95276,PositionY:11.25152,PositionZ:104.873,RotationX:14.63352,RotationY:355.1135,RotationZ:7.121413,Speed:10.96155,SpeedX:-5.13202,SpeedY:2.443944,SpeedZ:9.372567},
+{PositionX:16.64549,PositionY:11.4106,PositionZ:105.4347,RotationX:14.63339,RotationY:355.1135,RotationZ:7.121488,Speed:11.00642,SpeedX:-5.116251,SpeedY:2.640096,SpeedZ:9.380575},
+{PositionX:16.13566,PositionY:11.6987,PositionZ:106.3708,RotationX:14.63317,RotationY:355.1135,RotationZ:7.121613,Speed:11.06565,SpeedX:-5.087492,SpeedY:2.923785,SpeedZ:9.381762},
+{PositionX:15.83121,PositionY:11.88363,PositionZ:106.9322,RotationX:14.63303,RotationY:355.1135,RotationZ:7.121687,Speed:11.09272,SpeedX:-5.069259,SpeedY:3.070929,SpeedZ:9.376586},
+{PositionX:15.12519,PositionY:12.34449,PositionZ:108.2398,RotationX:14.63272,RotationY:355.1134,RotationZ:7.121861,Speed:11.13513,SpeedX:-5.025596,SpeedY:3.357203,SpeedZ:9.352208},
+{PositionX:15.02483,PositionY:12.41325,PositionZ:108.4262,RotationX:14.63267,RotationY:355.1134,RotationZ:7.121886,Speed:11.13917,SpeedX:-5.019357,SpeedY:3.392351,SpeedZ:9.34768},
+{PositionX:14.42524,PositionY:12.83871,PositionZ:109.5428,RotationX:14.6324,RotationY:355.1134,RotationZ:7.122036,Speed:11.15501,SpeedX:-4.982619,SpeedY:3.577665,SpeedZ:9.317083},
+{PositionX:14.22632,PositionY:12.98491,PositionZ:109.9141,RotationX:14.63231,RotationY:355.1134,RotationZ:7.122086,Speed:11.15761,SpeedX:-4.970778,SpeedY:3.630695,SpeedZ:9.306003},
+{PositionX:13.6323,PositionY:13.43455,PositionZ:111.0253,RotationX:14.63204,RotationY:355.1134,RotationZ:7.122235,Speed:11.15951,SpeedX:-4.93697,SpeedY:3.767723,SpeedZ:9.27174},
+{PositionX:13.23841,PositionY:13.74222,PositionZ:111.7639,RotationX:14.63186,RotationY:355.1134,RotationZ:7.122334,Speed:11.15712,SpeedX:-4.916101,SpeedY:3.843246,SpeedZ:9.248932},
+{PositionX:13.04206,PositionY:13.89809,PositionZ:112.1324,RotationX:14.63177,RotationY:355.1134,RotationZ:7.122385,Speed:11.15516,SpeedX:-4.906217,SpeedY:3.876939,SpeedZ:9.237747},
+{PositionX:12.45521,PositionY:14.37272,PositionZ:113.2356,RotationX:14.63149,RotationY:355.1134,RotationZ:7.122532,Speed:11.14722,SpeedX:-4.878847,SpeedY:3.964045,SpeedZ:9.205629},
+{PositionX:12.06566,PositionY:14.69416,PositionZ:113.9691,RotationX:14.63132,RotationY:355.1134,RotationZ:7.122632,Speed:11.14087,SpeedX:-4.862514,SpeedY:4.012127,SpeedZ:9.185733},
+{PositionX:11.77429,PositionY:14.9375,PositionZ:114.5182,RotationX:14.63118,RotationY:355.1134,RotationZ:7.122706,Speed:11.13585,SpeedX:-4.851249,SpeedY:4.043759,SpeedZ:9.171721},
+{PositionX:11.29004,PositionY:15.34673,PositionZ:115.4316,RotationX:14.63096,RotationY:355.1133,RotationZ:7.122832,Speed:11.12736,SpeedX:-4.834275,SpeedY:4.089247,SpeedZ:9.15019},
+{PositionX:11.09678,PositionY:15.51157,PositionZ:115.7964,RotationX:14.63087,RotationY:355.1133,RotationZ:7.12288,Speed:11.124,SpeedX:-4.828088,SpeedY:4.105216,SpeedZ:9.142221},
+{PositionX:10.51833,PositionY:16.00941,PositionZ:116.8891,RotationX:14.6306,RotationY:355.1133,RotationZ:7.123031,Speed:11.11431,SpeedX:-4.811446,SpeedY:4.146651,SpeedZ:9.120482},
+{PositionX:10.32592,PositionY:16.17634,PositionZ:117.2527,RotationX:14.63051,RotationY:355.1133,RotationZ:7.12308,Speed:11.11125,SpeedX:-4.806499,SpeedY:4.158564,SpeedZ:9.113935},
+{PositionX:9.750811,PositionY:16.67323,PositionZ:118.3405,RotationX:14.63023,RotationY:355.1133,RotationZ:7.123228,Speed:11.05125,SpeedX:-4.781222,SpeedY:4.115287,SpeedZ:9.073837},
+{PositionX:9.559488,PositionY:16.83859,PositionZ:118.7024,RotationX:14.63015,RotationY:355.1133,RotationZ:7.123279,Speed:11.04651,SpeedX:-4.7778,SpeedY:4.117757,SpeedZ:9.068747},
+{PositionX:8.985423,PositionY:17.33841,PositionZ:119.789,RotationX:14.62987,RotationY:355.1133,RotationZ:7.123426,Speed:11.07051,SpeedX:-4.778841,SpeedY:4.164049,SpeedZ:9.076325},
+{PositionX:8.79412,PositionY:17.50606,PositionZ:120.1513,RotationX:14.62978,RotationY:355.1133,RotationZ:7.123477,Speed:11.07474,SpeedX:-4.77795,SpeedY:4.176451,SpeedZ:9.076245},
+{PositionX:8.220566,PositionY:18.01146,PositionZ:121.2376,RotationX:14.62951,RotationY:355.1133,RotationZ:7.123626,Speed:11.08086,SpeedX:-4.773476,SpeedY:4.207065,SpeedZ:9.071932},
+{PositionX:8.029521,PositionY:18.18063,PositionZ:121.5996,RotationX:14.62942,RotationY:355.1133,RotationZ:7.123675,Speed:11.08145,SpeedX:-4.771665,SpeedY:4.215495,SpeedZ:9.069693},
+{PositionX:7.456843,PositionY:18.68986,PositionZ:122.6849,RotationX:14.62915,RotationY:355.1133,RotationZ:7.123826,Speed:11.08086,SpeedX:-4.766002,SpeedY:4.236753,SpeedZ:9.06204},
+{PositionX:7.266101,PositionY:18.8601,PositionZ:123.0465,RotationX:14.62906,RotationY:355.1133,RotationZ:7.123866,Speed:11.08017,SpeedX:-4.76414,SpeedY:4.242722,SpeedZ:9.059388},
+{PositionX:6.694296,PositionY:19.37204,PositionZ:124.1305,RotationX:14.62876,RotationY:355.1133,RotationZ:7.123986,Speed:11.07745,SpeedX:-4.758866,SpeedY:4.257998,SpeedZ:9.051656},
+{PositionX:6.313419,PositionY:19.71421,PositionZ:124.8527,RotationX:14.62856,RotationY:355.1132,RotationZ:7.124063,Speed:11.0754,SpeedX:-4.755693,SpeedY:4.26637,SpeedZ:9.046877},
+{PositionX:6.123069,PositionY:19.88553,PositionZ:125.2137,RotationX:14.62846,RotationY:355.1132,RotationZ:7.124103,Speed:11.07437,SpeedX:-4.754219,SpeedY:4.270105,SpeedZ:9.04463},
+{PositionX:5.669141,PositionY:20.18014,PositionZ:126.0705,RotationX:27.0747,RotationY:354.9966,RotationZ:14.68811,Speed:9.868987,SpeedX:-4.470401,SpeedY:2.54288,SpeedZ:8.422956},
+{PositionX:5.232231,PositionY:20.30785,PositionZ:126.8666,RotationX:10.80816,RotationY:355.1459,RotationZ:8.927627,Speed:9.041808,SpeedX:-4.337317,SpeedY:0.94244,SpeedZ:7.877422},
+{PositionX:5.060792,PositionY:20.31533,PositionZ:127.1725,RotationX:3.152712,RotationY:355.2092,RotationZ:2.810896,Speed:8.809256,SpeedX:-4.286417,SpeedY:0.3238497,SpeedZ:7.689261},
+{PositionX:4.640104,PositionY:20.1453,PositionZ:127.9221,RotationX:3.152439,RotationY:355.2091,RotationZ:2.810967,Speed:8.864769,SpeedX:-4.178568,SpeedY:-2.287725,SpeedZ:7.475963},
+{PositionX:4.242209,PositionY:19.70273,PositionZ:128.631,RotationX:3.152165,RotationY:355.2091,RotationZ:2.811037,Speed:9.415359,SpeedX:-3.908038,SpeedY:-4.948618,SpeedZ:6.991951},
+{PositionX:4.096535,PositionY:19.46308,PositionZ:128.8905,RotationX:3.152055,RotationY:355.2091,RotationZ:2.811066,Speed:9.554857,SpeedX:-3.69966,SpeedY:-5.81333,SpeedZ:6.619139},
+{PositionX:3.78233,PositionY:18.76245,PositionZ:129.4496,RotationX:3.151782,RotationY:355.209,RotationZ:2.811136,Speed:9.496914,SpeedX:-2.98568,SpeedY:-7.26243,SpeedZ:5.341742},
+{PositionX:3.630721,PositionY:18.30091,PositionZ:129.7191,RotationX:3.151618,RotationY:355.209,RotationZ:2.811179,Speed:9.279151,SpeedX:-2.520721,SpeedY:-7.707766,SpeedZ:4.509874},
+{PositionX:3.433639,PositionY:17.50231,PositionZ:130.0687,RotationX:3.151343,RotationY:355.209,RotationZ:2.81125,Speed:8.882135,SpeedX:-1.83486,SpeedY:-8.046673,SpeedZ:3.282785},
+{PositionX:3.343176,PositionY:17.01519,PositionZ:130.2288,RotationX:3.15118,RotationY:355.209,RotationZ:2.811292,Speed:8.690882,SpeedX:-1.500883,SpeedY:-8.128232,SpeedZ:2.68526},
+{PositionX:3.247944,PositionY:16.36205,PositionZ:130.3968,RotationX:3.15096,RotationY:355.209,RotationZ:2.811349,Speed:8.50632,SpeedX:-1.142476,SpeedY:-8.177664,SpeedZ:2.044028},
+{PositionX:3.175521,PositionY:15.7071,PositionZ:130.524,RotationX:3.150742,RotationY:355.2089,RotationZ:2.811406,Speed:8.387747,SpeedX:-0.8674867,SpeedY:-8.19713,SpeedZ:1.552038},
+{PositionX:3.108932,PositionY:14.88747,PositionZ:130.6401,RotationX:3.150467,RotationY:355.2089,RotationZ:2.811476,Speed:8.301728,SpeedX:-0.614067,SpeedY:-8.205767,SpeedZ:1.09864},
+{PositionX:3.06988,PositionY:14.2315,PositionZ:130.7076,RotationX:3.150249,RotationY:355.2089,RotationZ:2.811533,Speed:8.263403,SpeedX:-0.4656006,SpeedY:-8.208114,SpeedZ:0.8330158},
+{PositionX:3.040181,PositionY:13.57544,PositionZ:130.7584,RotationX:3.15003,RotationY:355.2089,RotationZ:2.811589,Speed:8.240849,SpeedX:-0.3529878,SpeedY:-8.209029,SpeedZ:0.6315378},
+{PositionX:3.017575,PositionY:12.91935,PositionZ:130.7964,RotationX:3.149812,RotationY:355.2088,RotationZ:2.811646,Speed:8.227688,SpeedX:-0.2675997,SpeedY:-8.209386,SpeedZ:0.4787681},
+{PositionX:3.004226,PositionY:12.42727,PositionZ:130.8185,RotationX:3.149648,RotationY:355.2088,RotationZ:2.811688,Speed:8.221587,SpeedX:-0.2174075,SpeedY:-8.209502,SpeedZ:0.3889683},
+{PositionX:2.990158,PositionY:11.77116,PositionZ:130.8413,RotationX:3.149429,RotationY:355.2088,RotationZ:2.811745,Speed:8.216517,SpeedX:-0.1648124,SpeedY:-8.209571,SpeedZ:0.2948694},
+{PositionX:2.977132,PositionY:10.95102,PositionZ:130.8616,RotationX:3.149156,RotationY:355.2087,RotationZ:2.811816,Speed:8.213078,SpeedX:-0.1165822,SpeedY:-8.2096,SpeedZ:0.2085797},
+{PositionX:2.969413,PositionY:10.29491,PositionZ:130.8731,RotationX:3.148937,RotationY:355.2087,RotationZ:2.811872,Speed:8.211605,SpeedX:-0.08837829,SpeedY:-8.209607,SpeedZ:0.1581194},
+{PositionX:2.962209,PositionY:9.474771,PositionZ:130.883,RotationX:3.148665,RotationY:355.2087,RotationZ:2.811942,Speed:8.21061,SpeedX:-0.06251539,SpeedY:-8.20961,SpeedZ:0.1118476}]
+        
+        
+        
+        var svg = d3.select("#speedometer")
+                .append("svg:svg")
+                .attr("width", 400)
+                .attr("height", 400);
 
-var margin = {top: 30, right: 120, bottom: 0, left: 120},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
 
-var x = d3.scale.linear()
-    .range([0, width]);
+        var gauge = iopctrl.arcslider()
+                .radius(120)
+                .events(false)
+                .indicator(iopctrl.defaultGaugeIndicator);
+        gauge.axis().orient("in")
+                .normalize(true)
+                .ticks(12)
+                .tickSubdivide(3)
+                .tickSize(10, 8, 10)
+                .tickPadding(5)
+                .scale(d3.scale.linear()
+                        .domain([0, 160])
+                        .range([-3*Math.PI/4, 3*Math.PI/4]));
 
-var barHeight = 20;
+        var segDisplay = iopctrl.segdisplay()
+                .width(80)
+                .digitCount(6)
+                .negative(false)
+                .decimals(0);
 
-var color = d3.scale.ordinal()
-    .range(["steelblue", "#ccc"]);
+        svg.append("g")
+                .attr("class", "segdisplay")
+                .attr("transform", "translate(130, 200)")
+                .call(segDisplay);
 
-var duration = 750,
-    delay = 25;
+        svg.append("g")
+                .attr("class", "gauge")
+                .call(gauge);
 
-var partition = d3.layout.partition()
-    .value(function(d) { return d.size; });
+        var i =0;
+        segDisplay.value(Math.floor(data[i].Speed*10));
+        gauge.value(data[i].Speed*10);
+        var inter = setInterval(function() {
+                updateData();
+        }, 82); 
+        function updateData() {
+            i=i+1;
+            gauge.value(data[i].Speed*10);
+            segDisplay.value(Math.floor(data[i].Speed*10));
+            if(i>=280){
+                i=i-280;
+            }
+        }
 
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("top");
-
-var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-svg.append("rect")
-    .attr("class", "background")
-    .attr("width", width)
-    .attr("height", height)
-    .on("click", up);
-
-svg.append("g")
-    .attr("class", "x axis");
-
-svg.append("g")
-    .attr("class", "y axis")
-  .append("line")
-    .attr("y1", "100%");
-
-d3.json("readme.json", function(error, root) {
-  if (error) throw error;
-
-  partition.nodes(root);
-  x.domain([0, root.value]).nice();
-  down(root, 0);
-});
-
-function down(d, i) {
-  if (!d.children || this.__transition__) return;
-  var end = duration + d.children.length * delay;
-
-  // Mark any currently-displayed bars as exiting.
-  var exit = svg.selectAll(".enter")
-      .attr("class", "exit");
-
-  // Entering nodes immediately obscure the clicked-on bar, so hide it.
-  exit.selectAll("rect").filter(function(p) { return p === d; })
-      .style("fill-opacity", 1e-6);
-
-  // Enter the new bars for the clicked-on data.
-  // Per above, entering bars are immediately visible.
-  var enter = bar(d)
-      .attr("transform", stack(i))
-      .style("opacity", 1);
-
-  // Have the text fade-in, even though the bars are visible.
-  // Color the bars as parents; they will fade to children if appropriate.
-  enter.select("text").style("fill-opacity", 1e-6);
-  enter.select("rect").style("fill", color(true));
-
-  // Update the x-scale domain.
-  x.domain([0, d3.max(d.children, function(d) { return d.value; })]).nice();
-
-  // Update the x-axis.
-  svg.selectAll(".x.axis").transition()
-      .duration(duration)
-      .call(xAxis);
-
-  // Transition entering bars to their new position.
-  var enterTransition = enter.transition()
-      .duration(duration)
-      .delay(function(d, i) { return i * delay; })
-      .attr("transform", function(d, i) { return "translate(0," + barHeight * i * 1.2 + ")"; });
-
-  // Transition entering text.
-  enterTransition.select("text")
-      .style("fill-opacity", 1);
-
-  // Transition entering rects to the new x-scale.
-  enterTransition.select("rect")
-      .attr("width", function(d) { return x(d.value); })
-      .style("fill", function(d) { return color(!!d.children); });
-
-  // Transition exiting bars to fade out.
-  var exitTransition = exit.transition()
-      .duration(duration)
-      .style("opacity", 1e-6)
-      .remove();
-
-  // Transition exiting bars to the new x-scale.
-  exitTransition.selectAll("rect")
-      .attr("width", function(d) { return x(d.value); });
-
-  // Rebind the current node to the background.
-  svg.select(".background")
-      .datum(d)
-    .transition()
-      .duration(end);
-
-  d.index = i;
-}
-
-function up(d) {
-  if (!d.parent || this.__transition__) return;
-  var end = duration + d.children.length * delay;
-
-  // Mark any currently-displayed bars as exiting.
-  var exit = svg.selectAll(".enter")
-      .attr("class", "exit");
-
-  // Enter the new bars for the clicked-on data's parent.
-  var enter = bar(d.parent)
-      .attr("transform", function(d, i) { return "translate(0," + barHeight * i * 1.2 + ")"; })
-      .style("opacity", 1e-6);
-
-  // Color the bars as appropriate.
-  // Exiting nodes will obscure the parent bar, so hide it.
-  enter.select("rect")
-      .style("fill", function(d) { return color(!!d.children); })
-    .filter(function(p) { return p === d; })
-      .style("fill-opacity", 1e-6);
-
-  // Update the x-scale domain.
-  x.domain([0, d3.max(d.parent.children, function(d) { return d.value; })]).nice();
-
-  // Update the x-axis.
-  svg.selectAll(".x.axis").transition()
-      .duration(duration)
-      .call(xAxis);
-
-  // Transition entering bars to fade in over the full duration.
-  var enterTransition = enter.transition()
-      .duration(end)
-      .style("opacity", 1);
-
-  // Transition entering rects to the new x-scale.
-  // When the entering parent rect is done, make it visible!
-  enterTransition.select("rect")
-      .attr("width", function(d) { return x(d.value); })
-      .each("end", function(p) { if (p === d) d3.select(this).style("fill-opacity", null); });
-
-  // Transition exiting bars to the parent's position.
-  var exitTransition = exit.selectAll("g").transition()
-      .duration(duration)
-      .delay(function(d, i) { return i * delay; })
-      .attr("transform", stack(d.index));
-
-  // Transition exiting text to fade out.
-  exitTransition.select("text")
-      .style("fill-opacity", 1e-6);
-
-  // Transition exiting rects to the new scale and fade to parent color.
-  exitTransition.select("rect")
-      .attr("width", function(d) { return x(d.value); })
-      .style("fill", color(true));
-
-  // Remove exiting nodes when the last child has finished transitioning.
-  exit.transition()
-      .duration(end)
-      .remove();
-
-  // Rebind the current parent to the background.
-  svg.select(".background")
-      .datum(d.parent)
-    .transition()
-      .duration(end);
-}
-
-// Creates a set of bars for the given data node, at the specified index.
-function bar(d) {
-  var bar = svg.insert("g", ".y.axis")
-      .attr("class", "enter")
-      .attr("transform", "translate(0,5)")
-    .selectAll("g")
-      .data(d.children)
-    .enter().append("g")
-      .style("cursor", function(d) { return !d.children ? null : "pointer"; })
-      .on("click", down);
-
-  bar.append("text")
-      .attr("x", -6)
-      .attr("y", barHeight / 2)
-      .attr("dy", ".35em")
-      .style("text-anchor", "end")
-      .text(function(d) { return d.name; });
-
-  bar.append("rect")
-      .attr("width", function(d) { return x(d.value); })
-      .attr("height", barHeight);
-
-  return bar;
-}
-
-// A stateful closure for stacking bars horizontally.
-function stack(i) {
-  var x0 = 0;
-  return function(d) {
-    var tx = "translate(" + x0 + "," + barHeight * i * 1.2 + ")";
-    x0 += x(d.value);
-    return tx;
-  };
-}
-
-</script>
+    </script>
+</body>
