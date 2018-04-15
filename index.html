@@ -21,9 +21,19 @@
 </style>
 
 <body>
+        <title>歷年台灣觀光統計資料分析</title>
+        <div  id="titletext" style="text-align:center;">
+                <h1>歷年中華民國國民出國目的地人數統計</h1>
+            </div>
     <div id="option">
         <input name="updateButton" type="button" value="Switch" onclick="switchData()" />
     </div>
+    <div style="position: absolute; color: blue; bottom: 10px; right: 10px;">
+            <dd>
+                <font size="5" >參考資料:</font>
+                <a href="http://stat.taiwan.net.tw/system/sheet_download.html" >交通部觀光局</a>
+            </dd>
+        </div>
 </body>
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script>
@@ -76,16 +86,19 @@
         .append("line")
         .attr("y1", "100%");
 
-    d3.json("traveler.json", function (error, root) {
-        if (error) throw error;
-
-        partition.nodes(root);
-        x.domain([1, root.value]).nice();
-        down(root, 0);
-    });
+    var dataflag=1;
+    var datasrc ="";
+    switchData();
 
     function switchData() {
-        d3.json("traveler.json", function (error, root) {
+        if(dataflag==1){
+            datasrc="traveler.json";
+            dataflag=0;
+        }else{
+            datasrc="readme.json";
+            dataflag=1;
+        }
+        d3.json(datasrc, function (error, root) {
             if (error) throw error;
 
             partition.nodes(root);
