@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
 <style>
-    text {
+    body {
         font-family: Microsoft JhengHei;
     }
 
@@ -22,8 +22,8 @@
 
 <body>
         <title>歷年台灣觀光統計資料分析</title>
-        <div  id="titletext" style="text-align:center;">
-                <h1>歷年中華民國國民出國目的地人數統計</h1>
+        <div   style="text-align:center;">
+                <h1 id="titletext"></h1>
             </div>
     <div id="option">
         <input name="updateButton" type="button" value="Switch" onclick="switchData()" />
@@ -94,9 +94,11 @@
         if(dataflag==1){
             datasrc="traveler.json";
             dataflag=0;
+            d3.select("titletext").text("歷年中華民國國民出國目的地人數統計");
         }else{
             datasrc="readme.json";
             dataflag=1;
+            d3.select("titletext").text("歷年來台旅客國籍統計");
         }
         d3.json(datasrc, function (error, root) {
             if (error) throw error;
