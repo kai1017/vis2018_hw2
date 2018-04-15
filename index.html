@@ -94,11 +94,11 @@
         if(dataflag==1){
             datasrc="traveler.json";
             dataflag=0;
-            document.getElementById("titletext").innerHTML("歷年中華民國國民出國目的地人數統計");
+            document.getElementById("titletext").innerHTML="歷年中華民國國民出國目的地人數統計";
         }else{
             datasrc="readme.json";
             dataflag=1;
-            document.getElementById("titletext").innerHTML("歷年來台旅客國籍統計");
+            document.getElementById("titletext").innerHTML="歷年來台旅客國籍統計";
         }
         d3.json(datasrc, function (error, root) {
             if (error) throw error;
