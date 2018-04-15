@@ -81,10 +81,7 @@ d3.json("traveler.json", function(error, root) {
   x.domain([1, root.value]).nice();
   down(root, 0);
 });
-function switchData(d){
-    partition.nodes(root);
-    x.domain([1, root.value]).nice();
-    down(root, 0);
+function switchData(){
 }
 function down(d, i) {
   if (!d.children || this.__transition__) return;
@@ -107,7 +104,7 @@ function down(d, i) {
   // Have the text fade-in, even though the bars are visible.
   // Color the bars as parents; they will fade to children if appropriate.
   enter.select("text").style("fill-opacity", 1e-6);
-  enter.select("rect").style("fill", color(true));
+  enter.select("rect").style("fill", color(102,102,0));
 
   // Update the x-scale domain.
   x.domain([1, d3.max(d.children, function(d) { return d.value; })]).nice();
