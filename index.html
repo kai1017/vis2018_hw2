@@ -104,7 +104,7 @@ function down(d, i) {
   // Have the text fade-in, even though the bars are visible.
   // Color the bars as parents; they will fade to children if appropriate.
   enter.select("text").style("fill-opacity", 1e-6);
-  enter.select("rect").style("fill", color(102,102,0));
+  enter.select("rect").style("fill", color(true));
 
   // Update the x-scale domain.
   x.domain([1, d3.max(d.children, function(d) { return d.value; })]).nice();
@@ -149,6 +149,7 @@ function down(d, i) {
 }
 
 function up(d) {
+    console.log(d);
   if (!d.parent || this.__transition__) return;
   var end = duration + d.children.length * delay;
 
